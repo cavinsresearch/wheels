@@ -1,14 +1,6 @@
+{ buildPythonPackage, fetchurl, python39Packages, python310Packages, python311Packages, python312Packages, python313Packages, ... }:
 {
-  buildPythonPackage,
-  fetchurl,
-  python39Packages,
-  python310Packages,
-  python311Packages,
-  python312Packages,
-  python313Packages,
-  ...
-}: {
-  "databento_dbn-python310" = python310Packages.buildPythonPackage rec {
+"databento_dbn-python310" = python310Packages.buildPythonPackage rec {
     pname = "databento_dbn";
     version = "0.36.1";
 
@@ -20,7 +12,7 @@
     format = "wheel";
   };
 
-  "databento_dbn-python311" = python311Packages.buildPythonPackage rec {
+"databento_dbn-python311" = python311Packages.buildPythonPackage rec {
     pname = "databento_dbn";
     version = "0.36.1";
 
@@ -32,7 +24,7 @@
     format = "wheel";
   };
 
-  "databento_dbn-python312" = python312Packages.buildPythonPackage rec {
+"databento_dbn-python312" = python312Packages.buildPythonPackage rec {
     pname = "databento_dbn";
     version = "0.36.1";
 
@@ -44,7 +36,7 @@
     format = "wheel";
   };
 
-  "databento_dbn-python313" = python313Packages.buildPythonPackage rec {
+"databento_dbn-python313" = python313Packages.buildPythonPackage rec {
     pname = "databento_dbn";
     version = "0.36.1";
 
@@ -56,7 +48,7 @@
     format = "wheel";
   };
 
-  "databento_dbn-python39" = python39Packages.buildPythonPackage rec {
+"databento_dbn-python39" = python39Packages.buildPythonPackage rec {
     pname = "databento_dbn";
     version = "0.36.1";
 

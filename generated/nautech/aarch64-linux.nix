@@ -1,14 +1,6 @@
+{ buildPythonPackage, fetchurl, python39Packages, python310Packages, python311Packages, python312Packages, python313Packages, ... }:
 {
-  buildPythonPackage,
-  fetchurl,
-  python39Packages,
-  python310Packages,
-  python311Packages,
-  python312Packages,
-  python313Packages,
-  ...
-}: {
-  "nautilus_trader-python311" = python311Packages.buildPythonPackage rec {
+"nautilus_trader-python311" = python311Packages.buildPythonPackage rec {
     pname = "nautilus_trader";
     version = "1.218.0";
 
@@ -20,7 +12,7 @@
     format = "wheel";
   };
 
-  "nautilus_trader-python312" = python312Packages.buildPythonPackage rec {
+"nautilus_trader-python312" = python312Packages.buildPythonPackage rec {
     pname = "nautilus_trader";
     version = "1.218.0";
 
@@ -32,7 +24,7 @@
     format = "wheel";
   };
 
-  "nautilus_trader-python313" = python313Packages.buildPythonPackage rec {
+"nautilus_trader-python313" = python313Packages.buildPythonPackage rec {
     pname = "nautilus_trader";
     version = "1.218.0";
 
