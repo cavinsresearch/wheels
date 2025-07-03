@@ -103,7 +103,7 @@ in {
     # Individual source generation scripts
     generateSourceScripts =
       mapAttrs' (sourceName: cmdInfo: {
-        name = "generate-${sourceName}";
+        name = sourceName;
         value = pkgs.writeShellScript "generate-${sourceName}-wheels" ''
           set -euo pipefail
 
