@@ -83,6 +83,11 @@ in {
         '')
         cfg.generated.wheelCommands)}
 
+      echo "🎨 Formatting generated Nix files..."
+      find "$OUTPUT_DIR" -name "*.nix" -type f -exec ${pkgs.alejandra}/bin/alejandra {} \;
+      echo "✨ Formatting complete!"
+      echo
+
       echo "🎉 All wheel generation completed!"
       echo "📁 Results available in: $OUTPUT_DIR"
 
@@ -118,6 +123,11 @@ in {
           cd "$OUTPUT_DIR"
           ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
           cd - > /dev/null
+
+          echo "🎨 Formatting generated Nix files..."
+          find "$OUTPUT_DIR" -name "*.nix" -type f -exec ${pkgs.alejandra}/bin/alejandra {} \;
+          echo "✨ Formatting complete!"
+          echo
 
           echo "✅ ${sourceName} wheels generated successfully!"
           echo "📁 Results available in: $OUTPUT_DIR"
