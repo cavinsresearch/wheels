@@ -10,57 +10,80 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      
+      # Set up git configuration early
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Clean up any existing update branch
+          git branch -D update-wheels || true
+          
       - name: Install Nix
         uses: cachix/install-nix-action@f0fe604f8a612776892427721526b4c7cfb23aba # v31
         with:
           nix_path: nixpkgs=channel:nixos-25.05
+          
       - name: Setup Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        
       - name: Run Nautilus wheel generator
         id: generate_wheels
         run: |
-          nix run .#generate-wheels
+          # Exit on any error
+          set -e
+          
+          echo "Running wheel generator..."
+          nix run .#generate-wheels -- --github-actions-output
+          
+          if [ $? -ne 0 ]; then
+            echo "::error::Wheel generator failed"
+            exit 1
+          fi
+          
       - name: Check for changes
         id: check_changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          # Check if there are any changes in the nix directory
-          if git diff --quiet HEAD -- nix/; then
+          # Check if there are any changes in the generated/ directory
+          if git diff --quiet HEAD -- generated/; then
             echo "changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in nix/ directory"
+            echo "No changes detected in generated/ directory"
           else
             echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in nix/ directory"
+            echo "Changes detected in generated/ directory"
             
             # Count changed files and store for PR body
-            changed_files=$(git diff --name-only HEAD -- nix/ | wc -l)
+            changed_files=$(git diff --name-only HEAD -- generated/ | wc -l)
             echo "changed-files=$changed_files" >> $GITHUB_OUTPUT
             
             echo "Changed files:"
-            git diff --name-only HEAD -- nix/
+            git diff --name-only HEAD -- generated/
           fi
+          
       - name: Get current UTC timestamp
         id: ts
         run: echo "now=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+        
       - name: Create Pull Request
         if: steps.check_changes.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update Nautilus Trader wheel definitions"
-          title: "Update Nautilus Trader wheel definitions"
+          commit-message: "chore: update wheel definitions"
+          title: "Update wheel definitions"
           body: |
-            🤖 **Automated update of Nautilus Trader wheel definitions**
+            🤖 **Automated update of wheel definitions**
 
-            This pull request contains automatically generated updates to the Nix expressions for Nautilus Trader Python wheels.
+            This pull request contains automatically generated updates to the Nix expressions for Python wheels exposed in this flake.
 
             ### Changes
-            - Updated wheel definitions in `nix/nautilus/` directory
-            - Generated from the latest packages available at https://packages.nautechsystems.io/simple/
+            - Updated wheel definitions in `generated/` directory
+            - Generated from the latest packages available at: 
+              - https://packages.nautechsystems.io/simple/
+              - https://pypi.org/simple/
             - Generated **${{ steps.generate_wheels.outputs.package-count }}** package derivations
-            - Modified **${{ steps.check_changes.outputs.changed-files }}** Nix file(s)
+            - Modified **${{ steps.check_changes.outputs.changed-files }}** file(s)
 
             ### Package Summary
             **Platforms:** ${{ steps.generate_wheels.outputs.platforms }}  
@@ -78,16 +101,17 @@ jobs:
 
             **Generated on:** ${{ github.run_id }}  
             **Timestamp:** ${{ steps.ts.outputs.now }}
-          branch: update-nautilus-wheels
+          branch: update-wheels
           delete-branch: true
           labels: |
             automated
             dependencies
             nix
+            
       - name: Output result
         run: |
           if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
-            echo "✅ Pull request created with Nautilus wheel updates"
+            echo "✅ Pull request created with wheel updates"
           else
             echo "ℹ️ No updates needed - wheel definitions are up to date"
           fi
