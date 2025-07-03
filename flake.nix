@@ -15,6 +15,7 @@
         ./modules/generators.nix
         ./modules/generated-tests.nix
         ./modules/generated-packages.nix
+        ./modules/python-dependencies.nix
         ./modules/apps.nix
         ./modules/devshell.nix
         ./modules/custom-packages.nix

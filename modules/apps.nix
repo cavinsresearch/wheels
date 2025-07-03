@@ -75,7 +75,7 @@ in {
           mkdir -p "$SOURCE_OUTPUT"
 
           cd "$SOURCE_OUTPUT"
-          ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
+          ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
           cd - > /dev/null
 
           echo "   ✅ ${sourceName} wheels generated in $SOURCE_OUTPUT"
@@ -116,7 +116,7 @@ in {
 
           # Run the generation
           cd "$OUTPUT_DIR"
-          ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
+          ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
           cd - > /dev/null
 
           echo "✅ ${sourceName} wheels generated successfully!"
@@ -217,7 +217,7 @@ in {
         wheel-generator = {
           type = "app";
           program = "${pkgs.writeShellScript "wheel-generator-wrapper" ''
-            exec ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} "$@"
+            exec ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} "$@"
           ''}";
           meta.description = "Direct access to the wheel generator tool with pre-configured settings";
         };
