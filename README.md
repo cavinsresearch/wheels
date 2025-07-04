@@ -1,98 +1,188 @@
 # Zeus Python Wheels Flake
 
-This flake provides Python wheels and packaging infrastructure for the Zeus project.
+This flake provides a complete system for managing pre-compiled Python wheels within a Nix project. It is designed to be modular, extensible, and easy to maintain.
 
 ## Features
 
-- **Universal wheels** (`py3-none-any`) managed via `pythonPackagesExtensions`
-- **Platform-specific wheels** for each supported architecture
-- **Automated wheel generation** from PyPI and custom package indexes
-- **Integrated overlay** that can be imported into other flakes
+- **Modular Flake Structure**: Uses `flake-parts` for a clean and organized `flake.nix`.
+- **Centralized Package Configuration**: All packages are defined in your `flake.nix`, acting as a single source of truth.
+- **Automated Wheel Generation**: Flake apps (`nix run .#generate-wheels`) automatically scrape package indexes like PyPI, download wheels, and generate Nix derivations.
+- **Universal & Platform-Specific Wheels**: Correctly handles both pure Python (`py3-none-any`) and platform-specific wheels with compiled extensions.
+- **Custom Package Support**: Easily define and manage your own custom Python packages alongside generated ones.
+- **Integrated Overlay**: Provides a Nixpkgs overlay to seamlessly inject all managed packages into your Python environments.
+- **Built-in Tests**: Automatically generates and runs tests for all managed packages (`nix flake check`).
 
-## Structure
+## Project Structure
+
+The project is organized into logical modules to keep the configuration clean and maintainable.
 
 ```
-nix/wheels/
-├── flake.nix              # Main flake definition
-├── universal.nix          # Universal wheels (generated)
-├── x86_64-linux.nix      # x86_64 Linux wheels (generated)  
-├── aarch64-linux.nix     # ARM64 Linux wheels (generated)
-├── aarch64-darwin.nix    # ARM64 macOS wheels (generated)
-├── x86_64-darwin.nix     # x86_64 macOS wheels (generated)
-└── README.md             # This file
+.
+├── flake.nix              # Main flake entrypoint and package configuration
+├── nix_wheel_generator.py # Core Python script for scraping and generation
+├── modules/               # Flake parts modules that contain all the logic
+│   ├── apps.nix           # Defines `nix run` commands
+│   ├── overlay.nix        # Provides the overlay for downstream projects
+│   ├── generators.nix     # Logic for generating Nix code from package specs
+│   └── ...                # Other modules for tests, packages, etc.
+└── generated/             # Output directory for generated Nix files
+    ├── pypi/              # Wheels generated from pypi.org
+    │   ├── universal.nix
+    │   └── x86_64-linux.nix
+    └── nautech/           # Wheels generated from a custom index
+        └── ...
 ```
 
 ## Usage
 
-### As an overlay in another flake
+### Using the Overlay in Your Flake
+
+To use the packages provided by this flake, add it as an input to your own project and apply the overlay.
 
 ```nix
+# your-project/flake.nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    zeus-wheels.url = "path:./nix/wheels";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    zeus-wheels.url = "github:your-org/zeus-wheels-flake"; # Or path:./path/to/this/flake
   };
 
-  outputs = { nixpkgs, zeus-wheels, ... }: {
+  outputs = { self, nixpkgs, zeus-wheels }: {
+    # ...
     packages.x86_64-linux = let
       pkgs = import nixpkgs {
         system = "x86_64-linux";
+        # Apply the overlay here
         overlays = [ zeus-wheels.overlays.default ];
       };
     in {
-      # Now you have access to all the Python packages
-      my-python-env = pkgs.python312.withPackages (ps: with ps; [
-        databento       # Universal wheel
-        betfair_parser  # Universal wheel  
-        nautilus_trader # Platform-specific wheel
-      ]);
+      # Now you can use any of the managed packages
+      devShells.default = pkgs.mkShell {
+        packages = [
+          (pkgs.python3.withPackages (ps: with ps; [
+            # A generated package from PyPI
+            databento
+            # A generated platform-specific package
+            nautilus_trader
+            # A custom-defined package
+            uuid7
+          ]))
+        ];
+      };
     };
   };
 }
 ```
 
-### Generating new wheels
+### Managing Packages
 
-```bash
-# Enter the development shell
-nix develop ./nix/wheels
+Packages are managed declaratively inside your `flake.nix`. There are two types: generated and custom.
 
-# Generate wheels from PyPI
-nix-wheel-generator --source pypi --packages databento,betfair-parser
+#### 1. Generated Packages
 
-# Generate wheels from Nautilus package index
-nix-wheel-generator --source nautilus --packages nautilus-trader
+These packages are automatically fetched and packaged by the `nix_wheel_generator.py` script. To add a new one, simply add an entry to the `wheels.packages` attribute set in your `flake.nix`.
 
-# Dry run to see what would be generated
-nix-wheel-generator --source pypi --packages some-package --dry-run
+```nix
+# flake.nix
+{
+  # ...
+  wheels.packages = {
+    # Add a new universal package from PyPI
+    my_new_package = {
+      source = "pypi";
+      platforms = ["universal"];
+      tests = ["import" "metadata"]; # Optional tests
+    };
+
+    # Add a new platform-specific package
+    another_package = {
+      source = "pypi";
+      platforms = ["x86_64-linux" "aarch64-darwin"];
+      wheel_name = "another-package-name"; # If wheel name differs
+    };
+  };
+  # ...
+}
 ```
 
-### Manual wheel management
-
-- **Universal wheels**: Edit `universal.nix` directly or regenerate with the wheel generator
-- **Platform-specific wheels**: These are automatically generated per-platform
-- **Integration**: The flake automatically detects and imports available wheel files
-
-## Wheel Types
-
-### Universal Wheels (`py3-none-any`)
-- Pure Python packages that work across all platforms and Python versions
-- Managed via `pythonPackagesExtensions` 
-- Available to all Python interpreters automatically
-- Examples: `databento`, `betfair-parser`, `pandas-gbq`
-
-### Platform-Specific Wheels  
-- Compiled extensions or platform-specific binaries
-- Generated per architecture and Python version
-- Examples: `nautilus-trader` with native extensions
-
-## Development
-
-The flake provides a development shell with:
-- Python 3 with required packages
-- The `nix-wheel-generator` tool  
-- `alejandra` for formatting generated Nix files
+After adding a package, run the generator to create the Nix files:
 
 ```bash
-nix develop ./nix/wheels
+nix run .#generate-wheels
+```
+
+#### 2. Custom Packages
+
+For packages that are not on a standard index, or require a manual Nix definition, use the `wheels.customPackages` attribute.
+
+**Example: Add `uuid7` as a custom package**
+
+```nix
+# flake.nix
+{
+  # ...
+  wheels.customPackages = {
+    uuid7 = {
+      definition = { pkgs, python3Packages }:
+        python3Packages.buildPythonPackage rec {
+          pname = "uuid7";
+          version = "0.1.0";
+          src = python3Packages.fetchPypi {
+            inherit pname version;
+            sha256 = "sha256-jFeqMu50VtPMaMlcRTC8VxZG3vrAGJXPxzVFRJiUpjw=";
+          };
+        };
+      # Optional: specify which python versions to build for
+      pythonVersions = ["311" "312"];
+      # Optional: provide a description
+      description = "UUID version 7 implementation for Python";
+    };
+  };
+  # ...
+}
+```
+
+Custom packages are automatically included in the overlay and do not require a generation step.
+
+## Development and Commands
+
+This flake provides several commands for development and maintenance.
+
+### Enter the Development Shell
+
+The development shell provides Python and the `nix-wheel-generator` tool.
+
+```bash
+nix develop
+```
+
+### Generating Wheels
+
+To generate all wheel derivations from the specifications in `flake.nix`:
+
+```bash
+# Generate everything
+nix run .#generate-wheels
+
+# Generate for a specific source only
+nix run .#generate-pypi
+nix run .#generate-nautech
+```
+
+The output files will be placed in the `generated/` directory.
+
+### Inspecting Configuration
+
+To see the final configuration that the wheel generator will use, including all package and source definitions:
+
+```bash
+nix run .#inspect-config
+```
+
+### Running Tests
+
+To run all automated package tests (import checks, ABI compatibility, etc.):
+
+```bash
+nix flake check
 ``` 
