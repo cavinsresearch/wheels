@@ -85,7 +85,7 @@ in {
     utilityPackages = {
       # Wheel generator with current config
       wheel-generator = pkgs.writeShellScriptBin "wheel-generator" ''
-        exec ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} "$@"
+        exec ${lib.getExe pkgs.python3} ${../nix_wheel_generator.py} "$@"
       '';
 
       # Config inspector - shows current wheel configuration

@@ -1,23 +1,12 @@
 # Development shell module for flake-parts
 {...}: {
-  perSystem = {pkgs, ...}: {
+  perSystem = {pkgs, config, ...}: {
     devShells.default = pkgs.mkShell {
       name = "wheels-dev";
 
       buildInputs = with pkgs; [
-        # Python with essential packages for wheel management
-        python3
-        python3Packages.requests
-        python3Packages.packaging
-        python3Packages.pip
-        python3Packages.wheel
-        python3Packages.setuptools
-
-        # Development and testing tools
-        python3Packages.pytest
-        python3Packages.black
-        python3Packages.isort
-        python3Packages.mypy
+        # Python with wheel generation and development packages
+        config.wheels.python.wheelGeneratorEnv
 
         # Nix tools
         nix
@@ -55,11 +44,11 @@
         echo ""
 
         # Make wheel generator available in PATH
-        export PATH="${pkgs.python3}/bin:$PATH"
+        export PATH="${config.wheels.python.wheelGeneratorEnv}/bin:$PATH"
 
         # Set up aliases for convenience
-        alias wg='python ${../nix_wheel_generator.py}'
-        alias wheel-gen='python ${../nix_wheel_generator.py}'
+        alias wg='${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py}'
+        alias wheel-gen='${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py}'
         alias test-wheels='nix flake check'
         alias build-wheels='nix build'
 

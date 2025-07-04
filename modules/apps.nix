@@ -75,13 +75,18 @@ in {
           mkdir -p "$SOURCE_OUTPUT"
 
           cd "$SOURCE_OUTPUT"
-          ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
+          ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
           cd - > /dev/null
 
           echo "   ✅ ${sourceName} wheels generated in $SOURCE_OUTPUT"
           echo
         '')
         cfg.generated.wheelCommands)}
+
+      echo "🎨 Formatting generated Nix files..."
+      find "$OUTPUT_DIR" -name "*.nix" -type f -exec ${pkgs.alejandra}/bin/alejandra {} \;
+      echo "✨ Formatting complete!"
+      echo
 
       echo "🎉 All wheel generation completed!"
       echo "📁 Results available in: $OUTPUT_DIR"
@@ -98,7 +103,7 @@ in {
     # Individual source generation scripts
     generateSourceScripts =
       mapAttrs' (sourceName: cmdInfo: {
-        name = "generate-${sourceName}";
+        name = sourceName;
         value = pkgs.writeShellScript "generate-${sourceName}-wheels" ''
           set -euo pipefail
 
@@ -116,8 +121,13 @@ in {
 
           # Run the generation
           cd "$OUTPUT_DIR"
-          ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
+          ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} --source ${sourceName} --packages ${concatStringsSep "," cmdInfo.wheelNames} --version-limit ${toString cfg.sources.${sourceName}.default_version_limit} --output-dir . "$@"
           cd - > /dev/null
+
+          echo "🎨 Formatting generated Nix files..."
+          find "$OUTPUT_DIR" -name "*.nix" -type f -exec ${pkgs.alejandra}/bin/alejandra {} \;
+          echo "✨ Formatting complete!"
+          echo
 
           echo "✅ ${sourceName} wheels generated successfully!"
           echo "📁 Results available in: $OUTPUT_DIR"
@@ -217,7 +227,7 @@ in {
         wheel-generator = {
           type = "app";
           program = "${pkgs.writeShellScript "wheel-generator-wrapper" ''
-            exec ${pkgs.python3}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} "$@"
+            exec ${config.wheels.python.wheelGeneratorEnv}/bin/python ${../nix_wheel_generator.py} --config ${wheelGeneratorConfig} "$@"
           ''}";
           meta.description = "Direct access to the wheel generator tool with pre-configured settings";
         };
