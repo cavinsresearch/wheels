@@ -89,6 +89,13 @@
               db-dtypes
             ];
         };
+
+        bybit_history = {
+          source = "pypi";
+          platforms = ["universal"];
+          tests = ["import" "metadata" "runtime"];
+          wheel_name = "bybit-history";
+        };
       };
 
       wheels.customPackages = {

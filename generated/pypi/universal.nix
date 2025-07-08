@@ -13,6 +13,17 @@
         python = "py3";
       };
     };
+    bybit_history = python-final.buildPythonPackage rec {
+      pname = "bybit_history";
+      version = "0.1.3";
+      format = "wheel";
+      src = python-final.fetchPypi {
+        inherit pname version format;
+        sha256 = "sha256-MkcKTT23KTFrbUftnzXsqxrBwtsRNFufP+zK8cMGARM=";
+        dist = "py3";
+        python = "py3";
+      };
+    };
     databento = python-final.buildPythonPackage rec {
       pname = "databento";
       version = "0.57.1";
