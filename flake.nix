@@ -107,6 +107,7 @@
             python3Packages.buildPythonPackage rec {
               pname = "uuid7";
               version = "0.1.0";
+              format = "setuptools";
               src = python3Packages.fetchPypi {
                 inherit pname version;
                 sha256 = "sha256-jFeqMu50VtPMaMlcRTC8VxZG3vrAGJXPxzVFRJiUpjw=";
