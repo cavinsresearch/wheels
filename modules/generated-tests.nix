@@ -11,6 +11,22 @@
   inherit (flake-parts-lib) mkPerSystemOption;
 
   cfg = config.wheels;
+
+  # Helper to group a list of attrsets by a key function from a list
+  # Example: groupBy (x: x.type) [{ type = "a"; }, { type = "b"; }, { type = "a"; }]
+  # Returns: { a = [ ... ]; b = [ ... ]; }
+  groupBy = keyFn: list:
+    lib.foldl' (
+      acc: elem: let
+        key = keyFn elem;
+      in
+        acc
+        // {
+          ${key} = (acc.${key} or []) ++ [elem];
+        }
+    )
+    {}
+    list;
 in {
   options.perSystem = mkPerSystemOption ({
     config,
@@ -424,6 +440,34 @@ in {
       isolation = makeIsolationTest;
     };
 
+    # Group all platform-specific tests by package and python version
+    # This creates groups like:
+    # {
+    #   "nautilus_trader-python312" = [ {test-def1}, {test-def2} ];
+    #   "databento-python312" = [ ... ];
+    # }
+    groupedTests = groupBy (test: "${test.packageName}-python${test.pythonVer}") platformTests;
+
+    # Create a single check for each package/pythonVer combination
+    # This check will run all the individual tests for that combination
+    generatedTests = lib.mapAttrs' (groupName: testsInGroup: let
+      # Get the individual test derivations for this group
+      testDerivations = map (test: testGenerators.${test.testType} test) testsInGroup;
+      # Extract package name and python version from the first test in the group
+      packageName = (builtins.elemAt testsInGroup 0).packageName;
+      pythonVer = (builtins.elemAt testsInGroup 0).pythonVer;
+    in {
+      name = groupName;
+      value = pkgs.runCommand "${groupName}-all-tests" {
+        # Depend on all individual test derivations. If any fails, this check fails.
+        nativeBuildInputs = testDerivations;
+        meta.description = "Runs all tests for ${packageName} with Python ${pythonVer}";
+      } ''
+        echo "✅ All tests for ${groupName} passed successfully."
+        touch $out
+      '';
+    }) groupedTests;
+
     # Essential integration tests not covered by generated system
     essentialTests = {
       # Test that the flake's overlay output actually works (the critical integration test)
@@ -570,13 +614,6 @@ in {
           touch $out
         '';
     };
-
-    # Generate all tests
-    generatedTests = listToAttrs (map (test: {
-        name = test.name;
-        value = testGenerators.${test.testType} test;
-      })
-      platformTests);
 
     # Combine generated and essential tests
     allTests = generatedTests // essentialTests;
