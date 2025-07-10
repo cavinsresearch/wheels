@@ -9,6 +9,13 @@
   inherit (flake-parts-lib) mkPerSystemOption;
 in {
   options = {
+    # Global Python versions configuration
+    wheels.pythonVersions = mkOption {
+      type = types.listOf (types.enum ["39" "310" "311" "312" "313" "314"]);
+      default = ["311" "312" "313"];
+      description = "Global list of Python versions to support across all packages";
+    };
+
     # Configuration for generated files location
     wheels.generatedPath = mkOption {
       type = types.path;
@@ -60,9 +67,9 @@ in {
           };
 
           python_versions = mkOption {
-            type = types.listOf (types.enum ["311" "312" "313"]);
-            default = ["311" "312" "313"];
-            description = "Supported Python versions";
+            type = types.listOf (types.enum ["39" "310" "311" "312" "313" "314"]);
+            default = [];
+            description = "Supported Python versions (if empty, uses global pythonVersions)";
           };
 
           tests = mkOption {

@@ -22,6 +22,12 @@
         ./modules/overlay.nix
       ];
 
+      # Global Python versions configuration
+      # Controls which Python versions are supported across all packages and derivations
+      # Available options: "39", "310", "311", "312", "313", "314" (beta)
+      # Example: wheels.pythonVersions = ["312" "313" "314"]; # Python 3.12, 3.13, and 3.14 (beta)
+      wheels.pythonVersions = ["312" "313"];
+
       # Source configurations
       wheels.sources = {
         nautech = {
@@ -113,7 +119,6 @@
                 sha256 = "sha256-jFeqMu50VtPMaMlcRTC8VxZG3vrAGJXPxzVFRJiUpjw=";
               };
             };
-          pythonVersions = ["311" "312" "313"];
           includeInAll = true;
           description = "UUID version 7 implementation for Python";
           tests = {

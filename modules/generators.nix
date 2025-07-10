@@ -29,6 +29,18 @@
     }.version_limit or (getSource
       packageName).default_version_limit;
 
+  # Get effective Python versions for a package (falls back to global if empty)
+  getPackagePythonVersions = packageName: let
+    packageVersions = cfg.packages.${packageName}.python_versions;
+  in
+    if packageVersions == [] then cfg.pythonVersions else packageVersions;
+
+  # Get effective Python versions for a custom package (falls back to global if empty)
+  getCustomPackagePythonVersions = packageName: let
+    customVersions = cfg.customPackages.${packageName}.pythonVersions;
+  in
+    if customVersions == [] then cfg.pythonVersions else customVersions;
+
   # Generate test matrix for all packages (wheel packages + custom packages)
   generateTestMatrix = let
     # Tests for wheel packages (from sources)
@@ -37,10 +49,12 @@
         map (pythonVer: {
           name = "${packageName}-${testType}-python${pythonVer}";
           inherit packageName testType pythonVer;
-          spec = packageSpec;
+          spec = packageSpec // {
+            python_versions = getPackagePythonVersions packageName;
+          };
           source = getSource packageName;
         })
-        packageSpec.python_versions)
+        (getPackagePythonVersions packageName))
       packageSpec.tests))
     cfg.packages);
 
@@ -56,7 +70,7 @@
               spec = {
                 # Convert custom package spec to test spec format
                 platforms = ["universal"]; # Custom packages are considered universal
-                python_versions = customSpec.pythonVersions;
+                python_versions = getCustomPackagePythonVersions packageName;
                 tests = customSpec.tests.types;
                 module_name = customSpec.tests.moduleName;
                 test_dependencies = ps: []; # No additional test dependencies for custom packages
@@ -65,7 +79,7 @@
               };
               source = "custom"; # Mark as custom source
             })
-            customSpec.pythonVersions)
+            (getCustomPackagePythonVersions packageName))
           customSpec.tests.types)
         else [])
     cfg.customPackages);

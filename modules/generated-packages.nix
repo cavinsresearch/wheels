@@ -39,16 +39,39 @@ in {
     platformPackages = cfg.generated.packagesByPlatform.${system} or {};
     universalPackages = cfg.generated.packagesByPlatform.universal or {};
 
+    # Helper function to get effective Python versions for any package
+    getEffectivePythonVersions = packageName: packageSpec:
+      if builtins.hasAttr "python_versions" packageSpec
+      then
+        if packageSpec.python_versions == [] then cfg.pythonVersions else packageSpec.python_versions
+      else
+        if packageSpec.pythonVersions == [] then cfg.pythonVersions else packageSpec.pythonVersions;
+
     # Add custom packages as exportable packages
     customPackages =
       lib.mapAttrs (name: spec: {
-        python_versions = spec.pythonVersions;
+        python_versions = getEffectivePythonVersions name spec;
         # Custom packages don't have the same structure as generated packages
         # but we need this for the generatePackageSet function
       })
       cfg.customPackages;
 
-    allPackages = platformPackages // universalPackages // customPackages;
+    # Update platform packages to use effective Python versions
+    effectivePlatformPackages =
+      lib.mapAttrs (name: spec:
+        spec // {
+          python_versions = getEffectivePythonVersions name spec;
+        })
+      platformPackages;
+
+    effectiveUniversalPackages =
+      lib.mapAttrs (name: spec:
+        spec // {
+          python_versions = getEffectivePythonVersions name spec;
+        })
+      universalPackages;
+
+    allPackages = effectivePlatformPackages // effectiveUniversalPackages // customPackages;
 
     # Generate package derivations for each Python version
     generatePackageSet =
@@ -65,8 +88,9 @@ in {
             value = pkg;
           }) (lib.filterAttrs (name: pkg: pkg != null) pythonPackages);
 
-          # Create a default package (latest Python)
-          defaultPkg = pythonPackages."313" or pythonPackages."312" or pythonPackages."311" or null;
+          # Create a default package (latest Python from configured versions)
+          latestVersion = lib.last (lib.sort (a: b: a < b) cfg.pythonVersions);
+          defaultPkg = pythonPackages.${latestVersion} or null;
         in {
           name = packageName;
           value =
@@ -149,15 +173,11 @@ in {
 
       # Development shell with all wheels available
       wheel-shell = pkgs.mkShell {
-        buildInputs = [
-          pkgsWithWheels.python311
-          pkgsWithWheels.python312
-          pkgsWithWheels.python313
-        ];
+        buildInputs = map (version: pkgsWithWheels."python${version}") cfg.pythonVersions;
 
         shellHook = ''
           echo "🐍 Zeus Wheels Development Shell"
-          echo "Available Python versions: 3.11, 3.12, 3.13"
+          echo "Available Python versions: ${lib.concatMapStringsSep ", " (v: "3.${lib.substring 1 1 v}.${lib.substring 2 1 v}") cfg.pythonVersions}"
           echo
           echo "📦 Available wheel packages:"
           ${lib.concatStringsSep "\n" (map (
@@ -194,26 +214,29 @@ in {
 
     # Legacy packages for backward compatibility
     legacyPackages =
-      {
-        # Python with wheel packages available
-        python311WithWheels = pkgsWithWheels.python311;
-        python312WithWheels = pkgsWithWheels.python312;
-        python313WithWheels = pkgsWithWheels.python313;
-      }
+      (builtins.listToAttrs (
+        map (version: {
+          name = "python${version}WithWheels";
+          value = pkgsWithWheels."python${version}";
+        }) cfg.pythonVersions
+      ))
       // (
         # Individual package access (legacy format)
         concatMapAttrs (
-          packageName: spec:
+          packageName: spec: let
+            # Create dynamic legacy format packages based on global pythonVersions
+            legacyFormatPackages = builtins.listToAttrs (
+              map (version: {
+                name = "${packageName}${version}";
+                value = pkgsWithWheels."python${version}Packages".${packageName} or null;
+              }) cfg.pythonVersions
+            );
+          in
             genAttrs spec.python_versions (
               pythonVer:
                 pkgsWithWheels."python${pythonVer}Packages".${packageName} or null
             )
-            // {
-              # Legacy format: packagename311, packagename312, etc.
-              "${packageName}311" = pkgsWithWheels.python311Packages.${packageName} or null;
-              "${packageName}312" = pkgsWithWheels.python312Packages.${packageName} or null;
-              "${packageName}313" = pkgsWithWheels.python313Packages.${packageName} or null;
-            }
+            // legacyFormatPackages
         )
         allPackages
       );
