@@ -124,7 +124,7 @@
           tests = {
             enabled = true;
             types = ["import" "metadata" "runtime"];
-            moduleName = "uuid_extensions.uuid7";
+            moduleName = "uuid_extensions";
           };
         };
       };

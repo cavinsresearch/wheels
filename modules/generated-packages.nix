@@ -77,10 +77,26 @@ in {
     generatePackageSet =
       mapAttrs' (
         packageName: spec: let
-          pythonPackages = genAttrs spec.python_versions (
-            pythonVer:
-              pkgsWithWheels."python${pythonVer}Packages".${packageName} or null
-          );
+          # Check if this is a custom package
+          isCustomPackage = cfg.customPackages ? ${packageName};
+          
+          pythonPackages = 
+            if isCustomPackage
+            then 
+              # For custom packages, call the definition function
+              genAttrs spec.python_versions (
+                pythonVer: 
+                  cfg.customPackages.${packageName}.definition {
+                    pkgs = pkgs;
+                    python3Packages = pkgsWithWheels."python${pythonVer}Packages";
+                  }
+              )
+            else
+              # For wheel packages, look them up in the Python package sets
+              genAttrs spec.python_versions (
+                pythonVer:
+                  pkgsWithWheels."python${pythonVer}Packages".${packageName} or null
+              );
 
           # Create individual versioned packages
           versionedPackages = mapAttrs' (pythonVer: pkg: {
@@ -224,17 +240,35 @@ in {
         # Individual package access (legacy format)
         concatMapAttrs (
           packageName: spec: let
+            # Check if this is a custom package
+            isCustomPackage = cfg.customPackages ? ${packageName};
+            
             # Create dynamic legacy format packages based on global pythonVersions
             legacyFormatPackages = builtins.listToAttrs (
               map (version: {
                 name = "${packageName}${version}";
-                value = pkgsWithWheels."python${version}Packages".${packageName} or null;
+                value = 
+                  if isCustomPackage
+                  then 
+                    cfg.customPackages.${packageName}.definition {
+                      pkgs = pkgs;
+                      python3Packages = pkgsWithWheels."python${version}Packages";
+                    }
+                  else
+                    pkgsWithWheels."python${version}Packages".${packageName} or null;
               }) cfg.pythonVersions
             );
           in
             genAttrs spec.python_versions (
               pythonVer:
-                pkgsWithWheels."python${pythonVer}Packages".${packageName} or null
+                if isCustomPackage
+                then 
+                  cfg.customPackages.${packageName}.definition {
+                    pkgs = pkgs;
+                    python3Packages = pkgsWithWheels."python${pythonVer}Packages";
+                  }
+                else
+                  pkgsWithWheels."python${pythonVer}Packages".${packageName} or null
             )
             // legacyFormatPackages
         )

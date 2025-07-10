@@ -66,19 +66,21 @@ in {
         lib.flatten
       ];
 
-      # Get custom packages for this Python version
+      # Get custom packages for this Python version  
       customPackages = lib.pipe cfg.customPackages [
         # Filter to packages that support this Python version
-        (lib.filterAttrs
-          (name: spec: lib.elem pythonVer spec.pythonVersions))
-        # Convert to actual package references
-        (lib.mapAttrsToList (name: spec: let
-          pkg =
-            pkgsWithWheels."python${pythonVer}Packages".${name} or null;
+        (lib.filterAttrs (name: spec: let
+          # Use the helper function to get effective Python versions
+          effectiveVersions = 
+            if spec.pythonVersions == [] then cfg.pythonVersions else spec.pythonVersions;
         in
-          lib.optional (pkg != null) pkg))
-        # Flatten the list
-        lib.flatten
+          lib.elem pythonVer effectiveVersions))
+        # Convert to actual package references by calling the definition function
+        (lib.mapAttrsToList (name: spec: 
+          spec.definition {
+            pkgs = pkgs;
+            python3Packages = pkgsWithWheels."python${pythonVer}Packages";
+          }))
       ];
 
       # Get test dependencies for all packages
