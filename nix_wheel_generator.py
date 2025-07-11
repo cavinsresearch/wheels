@@ -452,7 +452,7 @@ def generate_universal_entry(package_name: str, wheel: WheelInfo, source_config:
     
     return nix_expr, entry_info
 
-def write_nix_files(output_entries: Dict[str, List[str]], output_dir: str) -> List[str]:
+def write_nix_files(output_entries: Dict[str, List[str]], output_dir: str, python_versions: Optional[List[str]] = None) -> List[str]:
     """Write Nix attribute set files for each platform"""
     os.makedirs(output_dir.rstrip('/'), exist_ok=True)
     written_files = []
@@ -461,18 +461,11 @@ def write_nix_files(output_entries: Dict[str, List[str]], output_dir: str) -> Li
         # Sort entries for determinism
         body = "\n\n".join(sorted(entries))
         
-        # Always include all standard Python versions and use ... for extra arguments
-        # This makes the interface uniform across all generated files
-        all_params = [
-            "buildPythonPackage", 
-            "fetchurl", 
-            "python39Packages", 
-            "python310Packages", 
-            "python311Packages", 
-            "python312Packages", 
-            "python313Packages",
-            "..."
-        ]
+        # Include buildPythonPackage, fetchurl, configured Python versions, and ... for extra arguments
+        if python_versions is None:
+            python_versions = ['311', '312', '313']
+        python_params = [f"python{version}Packages" for version in sorted(python_versions)]
+        all_params = ["buildPythonPackage", "fetchurl"] + python_params + ["..."]
         header = "{ " + ", ".join(all_params) + " }:"
         
         file_content = header + "\n{\n" + body + "\n}\n"
@@ -655,6 +648,10 @@ def main():
         help="Comma-separated list of packages to process (defaults to source-specific packages)"
     )
     parser.add_argument(
+        "--python-versions",
+        help="Comma-separated list of Python versions to support (e.g., '311,312,313')"
+    )
+    parser.add_argument(
         "--version-limit",
         type=int,
         help="Number of latest versions to keep per package (defaults to source-specific limit)"
@@ -704,6 +701,11 @@ def main():
     
     # Use provided version limit or default from source
     version_limit = args.version_limit if args.version_limit is not None else source_config.default_version_limit
+    
+    # Parse Python versions from command line
+    python_versions = None
+    if args.python_versions:
+        python_versions = [v.strip() for v in args.python_versions.split(",") if v.strip()]
     
     if args.dry_run:
         logging.info("🎬 DRY RUN: Previewing wheel generation for source '%s'", args.source)
@@ -798,7 +800,7 @@ def main():
             logging.info("🏁 DRY RUN complete - no files written")
         else:
             # Write output files
-            written_files = write_nix_files(output_entries, args.output_dir)
+            written_files = write_nix_files(output_entries, args.output_dir, python_versions)
             
             # Write universal wheels file if any
             universal_file = write_universal_file(universal_entries, args.output_dir)

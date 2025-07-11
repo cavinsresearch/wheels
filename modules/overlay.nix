@@ -8,6 +8,9 @@
   flake.overlays.default = final: prev: let
     lib = prev.lib;
 
+    # Get configured Python versions
+    pythonVersions = config.wheels.pythonVersions;
+
     # Discover all available sources in the generated directory
     generatedPath = config.wheels.generatedPath;
     availableSources =
@@ -25,7 +28,7 @@
           inherit (final) fetchurl;
           # We'll provide the buildPythonPackage from each specific Python version
           buildPythonPackage = null; # This will be overridden per Python version
-          inherit (final) python39Packages python310Packages python311Packages python312Packages python313Packages;
+          inherit (final) python39Packages python310Packages python311Packages python312Packages python313Packages python314Packages;
         }
       else {};
 
@@ -110,7 +113,7 @@
             then
               import platformFile {
                 inherit (python-final) buildPythonPackage;
-                inherit (final) fetchurl python39Packages python310Packages python311Packages python312Packages python313Packages;
+                inherit (final) fetchurl python39Packages python310Packages python311Packages python312Packages python313Packages python314Packages;
               }
             else {};
         })
@@ -125,29 +128,21 @@
         allPlatformPackages;
     in
       builtins.foldl' (acc: pkgs: acc // pkgs) {} filteredPackages;
+    # Generate Python interpreter overrides dynamically based on configured versions
+    pythonOverrides = builtins.listToAttrs (
+      map (version: {
+        name = "python${version}";
+        value = prev."python${version}".override {
+          packageOverrides = python-final: python-prev:
+            (importAllPlatformPackagesForPython version python-final)
+            // (createCustomPackagesForPython version python-final python-prev);
+        };
+      }) pythonVersions
+    );
   in {
     # Add universal wheels to all Python package sets
     pythonPackagesExtensions =
       (prev.pythonPackagesExtensions or [])
       ++ [universalExtension];
-
-    # Override Python interpreters to include packages from all sources and custom packages
-    python311 = prev.python311.override {
-      packageOverrides = python-final: python-prev:
-        (importAllPlatformPackagesForPython "311" python-final)
-        // (createCustomPackagesForPython "311" python-final python-prev);
-    };
-
-    python312 = prev.python312.override {
-      packageOverrides = python-final: python-prev:
-        (importAllPlatformPackagesForPython "312" python-final)
-        // (createCustomPackagesForPython "312" python-final python-prev);
-    };
-
-    python313 = prev.python313.override {
-      packageOverrides = python-final: python-prev:
-        (importAllPlatformPackagesForPython "313" python-final)
-        // (createCustomPackagesForPython "313" python-final python-prev);
-    };
-  };
+  } // pythonOverrides;
 }
