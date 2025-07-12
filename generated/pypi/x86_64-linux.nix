@@ -10,11 +10,11 @@
 }: {
   "databento_dbn-python310" = python310Packages.buildPythonPackage rec {
     pname = "databento_dbn";
-    version = "0.36.1";
+    version = "0.36.2";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/66/0b/09d46de2f07ae3763c6e5e34d7892f5dc428d0fab9f08883e4a557455ab0/databento_dbn-0.36.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
-      sha256 = "sha256-YHc3UmIpMicXfmNgZLCbS1sEOEpGFBcPrzIVPhu6ECg=";
+      url = "https://files.pythonhosted.org/packages/35/8a/c3574a8d59823a1e507b17945a9e5bf1614f6aaefa1d3f074457e9a9023c/databento_dbn-0.36.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      sha256 = "sha256-1Xq9BVy90ns3yTiJ3EPV53Mx4rpoehxNmM5tNgGjM9k=";
     };
 
     format = "wheel";
@@ -22,11 +22,11 @@
 
   "databento_dbn-python311" = python311Packages.buildPythonPackage rec {
     pname = "databento_dbn";
-    version = "0.36.1";
+    version = "0.36.2";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/db/5b/01911d251e5aaa305ac16cf583e34d31e0a7a0df103f3163285aaa6033ad/databento_dbn-0.36.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
-      sha256 = "sha256-LdvJ3B2g7X7AU4Xg7DHwQa/kzFY3O5ZSSsYWkN3ghYI=";
+      url = "https://files.pythonhosted.org/packages/c3/7f/4a2dc38ffe7f7a8cd5e0e108237a7044044e99f933cfa6e3a48a6a6a59ab/databento_dbn-0.36.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      sha256 = "sha256-Je0fFjqt/oTbYu/DvB0QrqavPhNdZpE8gK8yKjVgbBg=";
     };
 
     format = "wheel";
@@ -34,11 +34,11 @@
 
   "databento_dbn-python312" = python312Packages.buildPythonPackage rec {
     pname = "databento_dbn";
-    version = "0.36.1";
+    version = "0.36.2";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/1b/d8/826727b9127fcd86977eec5945c606dbf751af5a56ad7d140cb7c822151f/databento_dbn-0.36.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
-      sha256 = "sha256-BqOmwplPl5n9/Z+fgHjZgEe/F7pvLLxsMpQFGFJ9ftE=";
+      url = "https://files.pythonhosted.org/packages/36/de/bd6bafd6fbb96cbb7140486ec986eab36dbb777e3abb88f124f6f8265dc8/databento_dbn-0.36.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      sha256 = "sha256-MCb5nVxiz+Qbs3zAYUZYX8b9bC23vb7rATVXO7Q83T8=";
     };
 
     format = "wheel";
@@ -46,11 +46,11 @@
 
   "databento_dbn-python313" = python313Packages.buildPythonPackage rec {
     pname = "databento_dbn";
-    version = "0.36.1";
+    version = "0.36.2";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/79/1f/46cd34fc76bb97b3e16b0c41d30c34d138feee30d9007f4a1ffbc287fd3e/databento_dbn-0.36.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
-      sha256 = "sha256-smrT6BqcMAWb1BLIFbp2WPrvSwBnz5bwveGrfJh9bNw=";
+      url = "https://files.pythonhosted.org/packages/d6/2f/76bf795c214e0c85c7c31778db328703c7c07db697851507022f1e9abe07/databento_dbn-0.36.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      sha256 = "sha256-HAijIfT4Ua3FTHdnz3MYIdK6WDDp+cfzHWUucb61GZk=";
     };
 
     format = "wheel";
@@ -58,11 +58,11 @@
 
   "databento_dbn-python39" = python39Packages.buildPythonPackage rec {
     pname = "databento_dbn";
-    version = "0.36.1";
+    version = "0.36.2";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/10/26/fcf71a58d7a91943bc1707e7d7b8e6ae4039cd3dd652966e8a8a63e25532/databento_dbn-0.36.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
-      sha256 = "sha256-tsVzmgB3UmPtxbLySN/9sFrRmEts5hgehEMY377H3B4=";
+      url = "https://files.pythonhosted.org/packages/fe/82/ff1dc5160334eb58d997b39315e6a7d58a6c870a0bf710d2865569bd21d3/databento_dbn-0.36.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      sha256 = "sha256-zKFYc72E+/jem3RhjjhJ0yN/o6CvkLZVtPapjsZbLmk=";
     };
 
     format = "wheel";
