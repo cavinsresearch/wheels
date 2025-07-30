@@ -26,11 +26,11 @@
     };
     databento = python-final.buildPythonPackage rec {
       pname = "databento";
-      version = "0.57.1";
+      version = "0.59.0";
       format = "wheel";
       src = python-final.fetchPypi {
         inherit pname version format;
-        sha256 = "sha256-VMZKI35+d9BELPjgo0g3dyDppZrn/XFRoB38nuZnBpo=";
+        sha256 = "sha256-GWsBK1s8A2JyaV/y2J1leBI4puSpS6nL9OZZAssD2TU=";
         dist = "py3";
         python = "py3";
       };
@@ -48,11 +48,11 @@
     };
     pandas_gbq = python-final.buildPythonPackage rec {
       pname = "pandas_gbq";
-      version = "0.29.1";
+      version = "0.29.2";
       format = "wheel";
       src = python-final.fetchPypi {
         inherit pname version format;
-        sha256 = "sha256-Iaqvb2JyOus6h1Hz/Yr/8A9LI3rnIsvmxOefF8hncIY=";
+        sha256 = "sha256-mfa2Qr2DQOlsKs331xcQiqDTHHA8LyhIF7p9w7FhELI=";
         dist = "py3";
         python = "py3";
       };
