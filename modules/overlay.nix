@@ -74,6 +74,13 @@
     universalExtension = python-final: python-prev:
       builtins.foldl' (acc: ext: acc // (ext python-final python-prev)) {} allUniversalExtensions;
 
+    # Fix for AF_UNIX path too long issue on macOS
+    fsspecFix = python-final: python-prev: {
+      fsspec = python-prev.fsspec.overridePythonAttrs (old: {
+        doCheck = false;  # Disable tests to avoid AF_UNIX path length issue
+      });
+    };
+
     # Helper function to create custom packages for a specific Python version
     createCustomPackagesForPython = pythonVer: python-final: python-prev: let
       # Filter custom packages that support this Python version
@@ -129,7 +136,7 @@
     # Add universal wheels to all Python package sets
     pythonPackagesExtensions =
       (prev.pythonPackagesExtensions or [])
-      ++ [universalExtension];
+      ++ [universalExtension fsspecFix];
 
     # Override Python interpreters to include packages from all sources and custom packages
     python311 = prev.python311.override {
