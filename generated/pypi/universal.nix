@@ -4,11 +4,11 @@
   python-final: python-prev: {
     betfair_parser = python-final.buildPythonPackage rec {
       pname = "betfair_parser";
-      version = "0.16.1";
+      version = "0.17";
       format = "wheel";
       src = python-final.fetchPypi {
         inherit pname version format;
-        sha256 = "sha256-57VkQLpWZy7YN2GwH1iV5EDwUuWIQfAyan2otbTeGV4=";
+        sha256 = "sha256-Ij6tkeOGL+T6MoqhdtIDzbEBGVDv6RaHps6wS9PXKmA=";
         dist = "py3";
         python = "py3";
       };
@@ -26,22 +26,11 @@
     };
     databento = python-final.buildPythonPackage rec {
       pname = "databento";
-      version = "0.59.0";
+      version = "0.63.0";
       format = "wheel";
       src = python-final.fetchPypi {
         inherit pname version format;
-        sha256 = "sha256-GWsBK1s8A2JyaV/y2J1leBI4puSpS6nL9OZZAssD2TU=";
-        dist = "py3";
-        python = "py3";
-      };
-    };
-    nautilus_ibapi = python-final.buildPythonPackage rec {
-      pname = "nautilus_ibapi";
-      version = "10.30.1";
-      format = "wheel";
-      src = python-final.fetchPypi {
-        inherit pname version format;
-        sha256 = "sha256-KqDfZU3ka0aZYvUEVBw4igmUhsPpql7bVaQOhJygDtg=";
+        sha256 = "sha256-WhakCcojLOm1hDYk5cNXNeDwOqdvg4w/YcSJr03gBDo=";
         dist = "py3";
         python = "py3";
       };
