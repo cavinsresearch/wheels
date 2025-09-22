@@ -50,7 +50,7 @@
           source = "pypi";
           platforms = ["universal"];
           tests = ["import" "metadata" "runtime"];
-          wheel_name = "nautilus-ibapi";
+          wheel_name = "nautilus_ibapi";
           module_name = "ibapi";
         };
 

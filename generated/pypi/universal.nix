@@ -35,6 +35,17 @@
         python = "py3";
       };
     };
+    nautilus_ibapi = python-final.buildPythonPackage rec {
+      pname = "nautilus_ibapi";
+      version = "10.37.2";
+      format = "wheel";
+      src = python-final.fetchPypi {
+        inherit pname version format;
+        sha256 = "sha256-fGZc5q2FxVDnwgUNDIXuRG3ls1vyztB1MrmhJHCnil0=";
+        dist = "py3";
+        python = "py3";
+      };
+    };
     pandas_gbq = python-final.buildPythonPackage rec {
       pname = "pandas_gbq";
       version = "0.29.2";
