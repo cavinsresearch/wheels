@@ -26,11 +26,11 @@
     };
     databento = python-final.buildPythonPackage rec {
       pname = "databento";
-      version = "0.63.0";
+      version = "0.64.0";
       format = "wheel";
       src = python-final.fetchPypi {
         inherit pname version format;
-        sha256 = "sha256-WhakCcojLOm1hDYk5cNXNeDwOqdvg4w/YcSJr03gBDo=";
+        sha256 = "sha256-NzamiL7V50jK+ND7lWNxn8t3Rq6DEinVbQVGS//naAc=";
         dist = "py3";
         python = "py3";
       };
