@@ -8,25 +8,13 @@
   python313Packages,
   ...
 }: {
-  "nautilus_trader-python311" = python311Packages.buildPythonPackage rec {
-    pname = "nautilus_trader";
-    version = "1.220.0";
-
-    src = fetchurl {
-      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.220.0-cp311-cp311-macosx_15_0_arm64.whl";
-      sha256 = "sha256-XgafEvw9WPIVDzBbRqup7nwXgAWnit0GflgyIy33LpY=";
-    };
-
-    format = "wheel";
-  };
-
   "nautilus_trader-python312" = python312Packages.buildPythonPackage rec {
     pname = "nautilus_trader";
-    version = "1.220.0";
+    version = "1.231.0";
 
     src = fetchurl {
-      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.220.0-cp312-cp312-macosx_15_0_arm64.whl";
-      sha256 = "sha256-UGolIz6e6pj9WHegAIIOIjfV3zPwWRJu4Q78MQ/7yDw=";
+      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.231.0-cp312-cp312-macosx_26_0_arm64.whl";
+      sha256 = "sha256-7ZMEy+3szQPhV8ibHprMPJw1eF87wqEU5OouJioFGJA=";
     };
 
     format = "wheel";
@@ -34,11 +22,23 @@
 
   "nautilus_trader-python313" = python313Packages.buildPythonPackage rec {
     pname = "nautilus_trader";
-    version = "1.220.0";
+    version = "1.231.0";
 
     src = fetchurl {
-      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.220.0-cp313-cp313-macosx_15_0_arm64.whl";
-      sha256 = "sha256-StyAnDF0BiU3zNUjOgDO9n3QjKZAF+Jgx9Tk5Wimy0o=";
+      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.231.0-cp313-cp313-macosx_26_0_arm64.whl";
+      sha256 = "sha256-uTEr0XywaL2UB882AQP3sjwJqvYRimMh2j3vL+jtqj0=";
+    };
+
+    format = "wheel";
+  };
+
+  "nautilus_trader-python314" = python314Packages.buildPythonPackage rec {
+    pname = "nautilus_trader";
+    version = "1.231.0";
+
+    src = fetchurl {
+      url = "https://packages.nautechsystems.io/simple/nautilus-trader/nautilus_trader-1.231.0-cp314-cp314-macosx_26_0_arm64.whl";
+      sha256 = "sha256-7d+jN545TN+hpRNyLHXL0IM0HsyHomqXNAOMZHsnrms=";
     };
 
     format = "wheel";
